@@ -59,4 +59,16 @@ class ProjectTest extends TestCase
             'user_id' => $user->id,
         ]);
     }
+
+    /** @test */
+    public function validation_for_creating_project()
+    {
+        $user = $this->getLoggedUser();
+
+        $this->postJson('/api/projects')
+                ->assertJsonValidationErrors(['name']);
+
+        $this->postJson('/api/projects', ['name' => 'az'])
+                ->assertJsonValidationErrors(['name']);
+    }
 }
