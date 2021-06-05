@@ -103,4 +103,21 @@ class ProjectTest extends TestCase
 
         $this->assertDatabaseHas('projects', ['name' => $data['name'], 'id' => 1]);
     }
+
+    /** @test */
+    public function delete_a_project()
+    {
+        $user = $this->getLoggedUser();
+
+        $project1 = Project::factory(['user_id' => $user->id])->create();
+
+        $this->deleteJson('/api/projects/' . $project1->id)
+                // ->dump()
+                ->assertOk()
+        ;
+
+        $this->assertDatabaseMissing('projects', ['id' => 1, 'name' => $project1->name]);
+
+        $this->assertDatabaseCount('projects', 0);
+    }
 }
