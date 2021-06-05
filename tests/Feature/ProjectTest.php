@@ -9,7 +9,7 @@ use Tests\TestCase;
 
 class ProjectTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, WithFaker;
 
     /** @test */
     public function unlogged_user_cannot_access_to_project()
@@ -30,10 +30,33 @@ class ProjectTest extends TestCase
         $project1 = Project::factory(['user_id' => $user->id])->create();
 
         $this->getJson('/api/projects')
-            ->dump()
+            // ->dump()
             ->assertOk()
             ->assertJsonCount(1, 'data')
             ->assertJsonPath('data.0.user_name', auth()->user()->name) // Assert using resource
             ;
+    }
+
+    /** @test */
+    public function logged_user_can_create_a_project()
+    {
+        $user = $this->getLoggedUser();
+
+        $data = [
+            'name' => $this->faker->sentence()
+        ];
+
+        $this->postJson('/api/projects', $data)
+                // ->dump()
+                ->assertJsonPath('data.user_name', $user->name)
+                ->assertStatus(201)
+        ;
+
+        $this->assertDatabaseCount('projects', 1);
+        $this->assertDatabaseHas('projects', [
+            'id'      => 1,
+            'name'    => $data['name'],
+            'user_id' => $user->id,
+        ]);
     }
 }

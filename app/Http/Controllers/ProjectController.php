@@ -28,7 +28,9 @@ class ProjectController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $project = auth()->user()->projects()->create($request->all());
+
+        return new ProjectResource($project);
     }
 
     /**

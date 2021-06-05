@@ -9,6 +9,8 @@ class Project extends Model
 {
     use HasFactory;
 
+    protected $fillable = ['name'];
+
     /*
     |------------------------------------------------------------------------------------
     | Relations
@@ -18,5 +20,4 @@ class Project extends Model
     {
         return $this->belongsTo(User::class)->withDefault();
     }
-
 }
