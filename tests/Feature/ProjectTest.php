@@ -81,6 +81,7 @@ class ProjectTest extends TestCase
 
         $this->getJson(('/api/projects/' . $project1->id))
                 // ->dump()
+                ->assertOk()
                 ->assertJsonPath('data.name', $project1->name)
         ;
     }
@@ -119,5 +120,45 @@ class ProjectTest extends TestCase
         $this->assertDatabaseMissing('projects', ['id' => 1, 'name' => $project1->name]);
 
         $this->assertDatabaseCount('projects', 0);
+    }
+
+    /** @test */
+    public function user_can_manage_only_his_projects()
+    {
+        $user = $this->getLoggedUser();
+
+        $project1 = Project::factory(['user_id' => $user->id])->create();
+        $project2 = Project::factory()->create();
+
+        // index
+        $this->getJson('/api/projects')
+                ->assertJsonCount(1, 'data')
+                ->assertJsonPath('data.0.name', $project1->name)
+                ->assertJsonPath('data.0.user_name', $user->name)
+            ;
+
+        // show
+        $this->getJson('/api/projects/' . $project2->id)
+            ->assertForbidden();
+
+        // update
+        $this->putJson('/api/projects/' . $project2->id)
+            ->assertForbidden();
+
+        // update
+        $this->deleteJson('/api/projects/' . $project2->id)
+            ->assertForbidden();
+    }
+
+    /** @test */
+    public function mine_working_fine()
+    {
+        $user = $this->getLoggedUser();
+
+        $project1 = Project::factory(['user_id' => $user->id])->create();
+        $project2 = Project::factory()->create();
+
+        $this->assertTrue($project1->isMine);
+        $this->assertFalse($project2->isMine);
     }
 }

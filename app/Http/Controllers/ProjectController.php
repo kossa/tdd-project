@@ -16,7 +16,7 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        $projects = Project::all();
+        $projects = Project::mine()->get();
 
         return ProjectResource::collection($projects);
     }
@@ -42,6 +42,8 @@ class ProjectController extends Controller
      */
     public function show(Project $project)
     {
+        abort_if(! $project->isMine, 403, 'Cannot access to this project');
+
         return new ProjectResource($project);
     }
 
@@ -54,6 +56,8 @@ class ProjectController extends Controller
      */
     public function update(Request $request, Project $project)
     {
+        abort_if(! $project->isMine, 403, 'Cannot access to this project');
+
         $project->update($request->all());
 
         return new ProjectResource($project);
@@ -67,6 +71,8 @@ class ProjectController extends Controller
      */
     public function destroy(Project $project)
     {
+        abort_if(! $project->isMine, 403, 'Cannot access to this project');
+
         $project->delete();
 
         return response()->json([
