@@ -84,4 +84,23 @@ class ProjectTest extends TestCase
                 ->assertJsonPath('data.name', $project1->name)
         ;
     }
+
+    /** @test */
+    public function update_project()
+    {
+        $user = $this->getLoggedUser();
+
+        $project1 = Project::factory(['user_id' => $user->id])->create();
+
+        $data = ['name' => $this->faker->sentence()];
+
+        $this->putJson('/api/projects/' . $project1->id, $data)
+                // ->dump()
+                ->assertOk()
+                ->assertJsonPath('data.name', $data['name'])
+                ->assertJsonPath('data.user_name', $user->name)
+        ;
+
+        $this->assertDatabaseHas('projects', ['name' => $data['name'], 'id' => 1]);
+    }
 }
